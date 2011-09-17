@@ -22,5 +22,9 @@ func TestDistnace(t *testing.T) {
 } 
 
 func TestNeighbors(t *testing.T) {
-  
+   one := NewCell(0,0)
+   zero_one := one.Neighbor(0,1)
+   one_one := one.Neighbor(1,1)
+   zero_two := zero_one.Neighbor(0,1)
+   compare(t, zero_two,one_one.neighbors[-1][1])
 }

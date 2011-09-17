@@ -1,4 +1,6 @@
 *.6*
+*.out
 _obj
 strugglin
 *.swp
+_test*

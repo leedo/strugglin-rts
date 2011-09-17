@@ -34,23 +34,24 @@ func Abs(n int32) int32{
   } 
   return n
 }
-func (this *Cell) AddNeighbor(neighbor *Cell) {
-    var x,y int32
-    if Abs(neighbor.X) > Abs(this.X) {
-      x = neighbor.X - this.X
-    } else {
-      x = this.X - neighbor.X
-    }
-    if Abs(neighbor.Y) > Abs(this.Y) {
-       y = neighbor.Y - this.Y
-    }  else {
-       y = this.Y - neighbor.Y
-    }
+
+func (*Cell) Offset(this, other int32) int32 {
+  if this == other {
+    return 0
+  } else if this > other {
+    return -1
+  } 
+  return 1
+  
+}
+func (this *Cell) AddNeighbor(other *Cell) {
+    x := this.Offset(this.X, other.X)
+    y := this.Offset(this.Y, other.Y)
     _,found := this.neighbors[x]
     if !found {
       this.neighbors[x] = make(map[int32] *Cell)
     } 
-    this.neighbors[x][y] = neighbor
+    this.neighbors[x][y] = other
 }
 
 func (this *Cell) notifyNeighors(cell * Cell) {
