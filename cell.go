@@ -1,8 +1,6 @@
 package strugglin
 
 import "math"
-// import "fmt"
-
 
 
 type CellState struct {

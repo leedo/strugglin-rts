@@ -1,10 +1,7 @@
 package strugglin
 
 import "rand"
-import "drw/json"
-import "bytes"
-import "os"
-
+import "json"
 
 type World struct {
   origin*Cell
@@ -20,13 +17,14 @@ func (this * World) ToJson() string {
   object["players"] = make([]interface{}, len(this.Players))
   i := 0
   for _,player := range this.Players {
-    json.Dumps(player.Serialize(), os.Stdout)
     object["players"].([]interface{})[i] = player.Serialize()
     i++
   }
-  buffer :=  bytes.NewBufferString("")
-  json.Dumps(object,buffer)
-  return buffer.String()
+  marshaled, err := json.Marshal(object)
+  if err!=nil {
+    panic(err)
+  }
+  return string(marshaled)
 }
 
 
