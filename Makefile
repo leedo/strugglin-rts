@@ -3,7 +3,10 @@ include $(GOROOT)/src/Make.inc
 TARG=strugglin
 
 GOFILES=\
-  grid.go
+  world.go \
+  cell.go \
+  player.go \
+  server.go \
 	
 strugglin: strugglin.$(O)
 	$(LD) -L _obj -o strugglin strugglin.$(O)
