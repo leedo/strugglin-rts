@@ -16,19 +16,23 @@ var World = Class.create({
     var height = this.canvas.height;
     var x = 0, y = 0;
 
+    ctx.strokeStyle = "white";
+
     while (x <= width) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
+      ctx.closePath();
       x += this.gridSize;
     }
 
     while (y <= height) {
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.moveTo(width, y);
+      ctx.lineTo(width, y);
       ctx.stroke();
+      ctx.closePath();
       y += this.gridSize;
     }
   }
