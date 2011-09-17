@@ -2,11 +2,14 @@ var World = Class.create({
 
   initialize: function(id) {
     this.canvas = $(id);
-    this.canvas.width = document.viewport.getWidth();
-    this.canvas.height = document.viewport.getHeight();
-
     this.context = this.canvas.getContext("2d");
     this.gridSize = 20; // length of a grid side
+    this.setupCanvas();
+  },
+
+  setupCanvas: function() {
+    this.canvas.width = document.viewport.getWidth();
+    this.canvas.height = document.viewport.getHeight();
     this.drawGrid();
   },
 
@@ -41,4 +44,6 @@ var World = Class.create({
 
 document.observe("dom:loaded", function() {
   var game = new World("view");  
+  window.onresize = game.setupCanvas.bind(game);
 });
+
