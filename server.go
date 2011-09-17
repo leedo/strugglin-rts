@@ -10,7 +10,7 @@ func StartServer (port int, world *World) {
     io.WriteString(w, world.ToJson())
   })
   err := http.ListenAndServe(":12345", nil)
-  if err != nil {
+  if err != nil { 
 		log.Fatal("ListenAndServe: ", err.String())
 	}
 }
