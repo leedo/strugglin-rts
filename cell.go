@@ -50,15 +50,13 @@ func (this *Cell) AddNeighbor(neighbor *Cell) {
     if !found {
       this.neighbors[x] = make(map[int32] *Cell)
     } 
-    println(fmt.Sprintf("[%v][%v].neighbors[%v][%v] = [%v][%v]", this.X, this.Y, x, y, neighbor.X,neighbor.Y))
     this.neighbors[x][y] = neighbor
 }
 
 func (this *Cell) notifyNeighors(cell * Cell) {
   for _,xplane := range this.neighbors {
     for _,neighbor := range xplane {
-      d := neighbor.Distance(cell) 
-      if d < 2.0 {
+      if neighbor.Distance(cell)  < 2.0 {
         neighbor.AddNeighbor(cell)
       }
     }
