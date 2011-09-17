@@ -13,14 +13,7 @@ func NewWorld() * World {
 }
 
 func (this * World) ToJson() string {
-  object := make(map[string] interface{})
-  object["players"] = make([]interface{}, len(this.Players))
-  i := 0
-  for _,player := range this.Players {
-    object["players"].([]interface{})[i] = player.Serialize()
-    i++
-  }
-  marshaled, err := json.Marshal(object)
+  marshaled, err := json.Marshal(this)
   if err!=nil {
     panic(err)
   }
