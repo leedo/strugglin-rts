@@ -20,3 +20,7 @@ func TestDistnace(t *testing.T) {
   other = NewCell(0,0)
   compare(t, one.Distance(other), 1.4142135623730951)
 } 
+
+func TestNeighbors(t *testing.T) {
+  
+}
