@@ -4,12 +4,32 @@ var World = Class.create({
     this.canvas = $(id);
     this.context = this.canvas.getContext("2d");
     this.gridSize = 20; // length of a grid side
-    this.setupCanvas();
+    this.prepareCanvas();
+    this.initOwnPlayer();
+    this.draw();
   },
 
-  setupCanvas: function() {
+  initOwnPlayer: function() {
+    var name = prompt("What is your name?");
+
+    if (name) {
+      new Ajax.Request("/state", {
+        method: "get",
+        parameters: { player: name },
+        onSuccess: function(transport) {
+          var data = transport.responseText.evalJSON();
+          console.log(data);
+        }
+      });
+    }
+  },
+
+  prepareCanvas: function() {
     this.canvas.width = document.viewport.getWidth();
     this.canvas.height = document.viewport.getHeight();
+  },
+
+  draw: function() {
     this.drawGrid();
   },
 
@@ -44,6 +64,6 @@ var World = Class.create({
 
 document.observe("dom:loaded", function() {
   var game = new World("view");  
-  window.onresize = game.setupCanvas.bind(game);
+  window.onresize = game.prepareCanvas.bind(game);
 });
 
