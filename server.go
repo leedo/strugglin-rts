@@ -5,10 +5,12 @@ import  "io"
 import  "io/ioutil"
 import  "log"
 
+
 func StartServer (listen string, world *World) {
 
   http.HandleFunc("/state", func (w http.ResponseWriter, req *http.Request) {
-    io.WriteString(w, world.ToJson())
+    player := req.URL.Query()["player"][0]
+    io.WriteString(w, world.PlayerState(player))
   })
 
   http.HandleFunc("/", func (w http.ResponseWriter, req *http.Request) {

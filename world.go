@@ -12,8 +12,12 @@ func NewWorld() * World {
   return &World{NewCell(0,0),make(map[string]*Player)}
 }
 
-func (this * World) ToJson() string {
-  marshaled, err := json.Marshal(this)
+func (this * World) PlayerState(name string) string {
+  _,found := this.Players[name]
+  if !found {
+    this.AddPlayer(name) 
+  }
+  marshaled, err := json.Marshal(this.Players[name])
   if err!=nil {
     panic(err)
   }
