@@ -20,12 +20,12 @@ var World = Class.create({
 
     this.cellSize = 20, this.cells_x = 20, this.cells_y = 20;
     this.prepareCanvas(); // updates cells_x/y from browser size
-    this.setupOrigin();
+    this.centerCell(new Cell(0,0));
 
     this.tickInterval = 100;
     this.ownPlayer = null;
-    this.initOwnPlayer(); //gets player info from server
     this.tick(); //starts the game loop
+    this.initOwnPlayer(); //gets player info from server
   },
 
   tick: function () {
@@ -40,6 +40,7 @@ var World = Class.create({
     this.drawGrid();
     this.drawOwnPlayer();
     this.drawHUD();
+    this.drawOrigin();
   },
 
   initOwnPlayer: function() {
@@ -53,15 +54,19 @@ var World = Class.create({
           var data = transport.responseText.evalJSON();
           var cell = new Cell(data.Location.X, data.Location.Y);
           this.ownPlayer = new Player(data.Name, cell);
+          this.centerCell(cell);
         }.bind(this)
       });
     }
   },
 
-  setupOrigin: function() {
-    // start with 0,0 in the center
+  centerCell: function(cell) {
+    // find where 0,0 is
     var x = Math.floor(this.canvas.width  / (this.cellSize * 2)) * this.cellSize;
     var y = Math.floor(this.canvas.height / (this.cellSize * 2)) * this.cellSize;
+    // move to this cell
+    x -= cell.x * this.cellSize;
+    y -= cell.y * this.cellSize;
     this.origin = {x: x, y: y};
   },
 
@@ -90,6 +95,9 @@ var World = Class.create({
     ctx.font = "16px sans-serif";
     ctx.fillStyle = "white";
 
+    ctx.fillText("cells_x: " + this.cells_x, 16, 64);
+    ctx.fillText("cells_y: " + this.cells_y, 16, 80);
+
     if (this.ownPlayer == null) {
       ctx.fillText("loading player...", 16, 16);
       return;
@@ -98,9 +106,10 @@ var World = Class.create({
     ctx.fillText("name: " + this.ownPlayer.name, 16, 16);
     ctx.fillText("x: " + this.ownPlayer.cell.x, 16, 32);
     ctx.fillText("y: " + this.ownPlayer.cell.y, 16, 48);
-    ctx.fillText("cells_x: " + this.cells_x, 16, 64);
-    ctx.fillText("cells_y: " + this.cells_y, 16, 80);
+  },
 
+  drawOrigin: function() {
+    var ctx = this.context;
     ctx.fillStyle = "red";
     ctx.beginPath();
     ctx.arc(this.origin.x, this.origin.y, 2, 0, Math.PI*2, true);
