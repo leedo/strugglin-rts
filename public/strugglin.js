@@ -18,8 +18,8 @@ var World = Class.create({
     this.canvas = $(id);
     this.context = this.canvas.getContext("2d");
 
-    this.cellSize = 20, this.cells_x = 20, this.cells_y = 20;
-    this.prepareCanvas(); // updates cells_x/y from browser size
+    this.cellSize = 20;
+    this.resizeCanvas();
     this.centerCell(new Cell(0,0));
 
     this.tickInterval = 100;
@@ -70,11 +70,9 @@ var World = Class.create({
     this.origin = {x: x, y: y};
   },
 
-  prepareCanvas: function() {
+  resizeCanvas: function() {
     this.canvas.width  = document.viewport.getWidth();
     this.canvas.height = document.viewport.getHeight();
-    this.cells_x = Math.floor(this.canvas.width / this.cellSize);
-    this.cells_y = Math.floor(this.canvas.height / this.cellSize);
   },
 
   drawOwnPlayer: function() {
@@ -94,9 +92,6 @@ var World = Class.create({
     var ctx = this.context;
     ctx.font = "16px sans-serif";
     ctx.fillStyle = "white";
-
-    ctx.fillText("cells_x: " + this.cells_x, 16, 64);
-    ctx.fillText("cells_y: " + this.cells_y, 16, 80);
 
     if (this.ownPlayer == null) {
       ctx.fillText("loading player...", 16, 16);
@@ -148,6 +143,6 @@ var World = Class.create({
 
 document.observe("dom:loaded", function() {
   var game = new World("view");  
-  window.onresize = game.prepareCanvas.bind(game);
+  window.onresize = game.resizeCanvas.bind(game);
 });
 
