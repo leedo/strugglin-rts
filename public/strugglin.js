@@ -18,26 +18,37 @@ var World = Class.create({
     this.canvas = $(id);
     this.context = this.canvas.getContext("2d");
 
-    this.cellSize = 20;
+    this.cellSize = 100;
     this.resizeCanvas();
     this.centerCell(new Cell(0,0));
     this.cells = {};
 
-    /*
-    document.observe("mousemove", function(e) {
-      var cell = this.cellFromPosition(e.pointerX(), e.pointerY());
-    }.bind(this));
-    */
-
-    document.observe("click", function(e) {
-      var cell = this.cellFromPosition(e.pointerX(), e.pointerY());
-      this.centerCell(cell);
-    }.bind(this));
-
+    document.observe("keydown", this.handleKey.bind(this));
     this.tickInterval = 100;
     this.ownPlayer = null;
     this.tick(); //starts the game loop
     this.initOwnPlayer(); //gets player info from server
+  },
+
+  handleKey: function(e) {
+    if (e.findElement("#controls")) return;
+    var cell = this.centeredCell;
+    var x = cell.x, y = cell.y;
+    switch (e.keyCode) {
+      case (37): //left
+        x = cell.x - 1;
+        break;
+      case (38): //up
+        y = cell.y - 1;
+        break;
+      case (39): //right
+        x = cell.x + 1;
+        break;
+      case (40): //down
+        y = cell.y + 1;
+        break;
+    }
+    this.centerCell(this.getCell(x, y));
   },
 
   getCell: function(x, y) {
@@ -67,10 +78,10 @@ var World = Class.create({
 
   draw: function() {
     this.canvas.width = this.canvas.width; // clears canvas fast
-    this.drawGrid();
     this.drawOwnPlayer();
-    this.drawHUD();
     this.drawOrigin();
+    this.drawGrid();
+    this.drawHUD();
   },
 
   initOwnPlayer: function() {
@@ -197,6 +208,15 @@ var World = Class.create({
 
 document.observe("dom:loaded", function() {
   var game = new World("view");  
-  window.onresize = game.resizeCanvas.bind(game);
+
+  window.onresize = function() {
+    game.resizeCanvas();
+    game.centerCell(game.centeredCell);
+  };
+
+  $('scale').observe("change", function(e) {
+    game.cellSize = Number(this.value);
+    game.centerCell(game.centeredCell);
+  });
 });
 
