@@ -21,11 +21,41 @@ var World = Class.create({
     this.cellSize = 20;
     this.resizeCanvas();
     this.centerCell(new Cell(0,0));
+    this.cells = {};
+
+    /*
+    document.observe("mousemove", function(e) {
+      var cell = this.cellFromPosition(e.pointerX(), e.pointerY());
+    }.bind(this));
+    */
+
+    document.observe("click", function(e) {
+      var cell = this.cellFromPosition(e.pointerX(), e.pointerY());
+      this.centerCell(cell);
+    }.bind(this));
 
     this.tickInterval = 100;
     this.ownPlayer = null;
     this.tick(); //starts the game loop
     this.initOwnPlayer(); //gets player info from server
+  },
+
+  getCell: function(x, y) {
+    if (!this.cells[x]) {
+      this.cells[x] = {};
+    }
+    if (!this.cells[x][y]) {
+      this.cells[x][y] = new Cell(x, y);
+    }
+    return this.cells[x][y];
+  },
+
+  cellFromPosition: function(x, y) {
+    var offset_x = x - this.origin.x;
+    var offset_y = y - this.origin.y;
+    var cell_x = Math.floor(offset_x / this.cellSize);
+    var cell_y = Math.floor(offset_y / this.cellSize);
+    return this.getCell(cell_x, cell_y);
   },
 
   tick: function () {
@@ -61,12 +91,13 @@ var World = Class.create({
   },
 
   centerCell: function(cell) {
+    this.centeredCell = cell;
     // find where 0,0 is
     var x = Math.floor(this.canvas.width  / (this.cellSize * 2)) * this.cellSize;
     var y = Math.floor(this.canvas.height / (this.cellSize * 2)) * this.cellSize;
     // move to this cell
-    x -= cell.x * this.cellSize;
-    y -= cell.y * this.cellSize;
+    x -= cell.x * this.cellSize - (this.cellSize / 2);
+    y -= cell.y * this.cellSize - (this.cellSize / 2);
     this.origin = {x: x, y: y};
   },
 
@@ -83,9 +114,8 @@ var World = Class.create({
   fillCell: function(cell, color) {
     if (!color) color = "white";
     this.context.fillStyle = color;
-    var x = this.origin.x + (cell.x * this.cellSize);
-    var y = this.origin.y + (cell.y * this.cellSize);
-    this.context.fillRect(x, y, this.cellSize, this.cellSize);
+    var pos = this.findCellPosition(cell);
+    this.context.fillRect(pos.x, pos.y, this.cellSize, this.cellSize);
   },
 
   drawHUD: function() {
@@ -104,19 +134,25 @@ var World = Class.create({
   },
 
   drawOrigin: function() {
-    var ctx = this.context;
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(this.origin.x, this.origin.y, 2, 0, Math.PI*2, true);
-    ctx.closePath();
-    ctx.fill();
+    this.fillCell(new Cell(0,0), "red");
+  },
+
+  findCellPosition: function(cell) {
+    // find where origin is
+    var x = this.origin.x;
+    var y = this.origin.y;
+    // add this cell's offsets
+    x += cell.x * this.cellSize;
+    y += cell.y * this.cellSize;
+    return {x: x, y: y};
   },
 
   drawGrid: function() {
     var ctx = this.context;
     var width = this.canvas.width;
     var height = this.canvas.height;
-    var x = 0, y = 0;
+    var pos = this.findCellPosition(this.centeredCell);
+    var x = pos.x, y = pos.y;
 
     ctx.strokeStyle = "rgba(255,255,255,0.25)";
 
@@ -129,6 +165,15 @@ var World = Class.create({
       x += this.cellSize;
     }
 
+    x = pos.x - this.cellSize;
+    while (x >= 0) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+      ctx.closePath();
+      x -= this.cellSize;
+    }
     while (y <= height) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -136,6 +181,15 @@ var World = Class.create({
       ctx.stroke();
       ctx.closePath();
       y += this.cellSize;
+    }
+    y = pos.y - this.cellSize;
+    while (y >= 0) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+      ctx.closePath();
+      y -= this.cellSize;
     }
   }
 
