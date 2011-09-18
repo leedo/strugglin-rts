@@ -62,6 +62,14 @@ var World = Class.create({
 
 });
 
+var Player = Class.create({
+  initialize: function(name, x, y) {
+    this.name = name;
+    this.x = x;
+    this.y = y;
+  }
+});
+
 document.observe("dom:loaded", function() {
   var game = new World("view");  
   window.onresize = game.prepareCanvas.bind(game);
