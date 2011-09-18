@@ -104,11 +104,11 @@ var World = Class.create({
   centerCell: function(cell) {
     this.centeredCell = cell;
     // find where 0,0 is
-    var x = Math.floor(this.canvas.width  / (this.cellSize * 2)) * this.cellSize;
-    var y = Math.floor(this.canvas.height / (this.cellSize * 2)) * this.cellSize;
+    var x = this.canvas.width  / 2;
+    var y = this.canvas.height / 2;
     // move to this cell
-    x -= cell.x * this.cellSize - (this.cellSize / 2);
-    y -= cell.y * this.cellSize - (this.cellSize / 2);
+    x -= cell.x * this.cellSize + (this.cellSize / 2);
+    y -= cell.y * this.cellSize + (this.cellSize / 2);
     this.origin = {x: x, y: y};
   },
 
@@ -165,7 +165,7 @@ var World = Class.create({
     var pos = this.findCellPosition(this.centeredCell);
     var x = pos.x, y = pos.y;
 
-    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.strokeStyle = "#111";
 
     while (x <= width) {
       ctx.beginPath();
