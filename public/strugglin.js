@@ -1,14 +1,17 @@
 var Player = Class.create({
-  initialize: function(name, cell) {
+  initialize: function(name, x, y, color) {
     this.name = name;
-    this.cell = cell;
+    this.color = color;
+    this.x = x;
+    this.y = y;
   }
 });
 
 var Cell = Class.create({
-  initialize: function(x, y, size) {
+  initialize: function(x, y) {
     this.x = x;
     this.y = y;
+    this.color = "rgba(0,0,0,0)";
   }
 });
 
@@ -20,14 +23,28 @@ var World = Class.create({
 
     this.cellSize = 100;
     this.resizeCanvas();
-    this.centerCell(new Cell(0,0));
-    this.cells = {};
+
+    this.selection = []; // list of selected cells
+    this.cell_map = {};
+    this.players = [];
+
+    this.originCell = this.getCell(0,0);
+    this.originCell.color = "red";
+    this.centerOnCell(this.originCell);
 
     document.observe("keydown", this.handleKey.bind(this));
+    document.observe("mousedown",   this.handleMouseDown.bind(this));
+
     this.tickInterval = 100;
     this.ownPlayer = null;
     this.tick(); //starts the game loop
     this.initOwnPlayer(); //gets player info from server
+  },
+
+  handleMouseDown: function(e) {
+    if (e.findElement("#controls")) return;
+    var cell = this.cellFromPosition(e.pointerX(), e.pointerY());
+    this.selection = [cell];
   },
 
   handleKey: function(e) {
@@ -47,18 +64,30 @@ var World = Class.create({
       case (40): //down
         y = cell.y + 1;
         break;
+      case (65): //a
+        this.ownPlayer.x -= 1;
+        break;
+      case (68): //d
+        this.ownPlayer.x += 1;
+        break;
+      case (83): //s
+        this.ownPlayer.y += 1;
+        break;
+      case (87): // w
+        this.ownPlayer.y -= 1;
+        break;
     }
-    this.centerCell(this.getCell(x, y));
+    this.centerOnCell(this.getCell(x, y));
   },
 
   getCell: function(x, y) {
-    if (!this.cells[x]) {
-      this.cells[x] = {};
+    if (!this.cell_map[x]) {
+      this.cell_map[x] = {};
     }
-    if (!this.cells[x][y]) {
-      this.cells[x][y] = new Cell(x, y);
+    if (!this.cell_map[x][y]) {
+      this.cell_map[x][y] = new Cell(x, y);
     }
-    return this.cells[x][y];
+    return this.cell_map[x][y];
   },
 
   cellFromPosition: function(x, y) {
@@ -78,10 +107,21 @@ var World = Class.create({
 
   draw: function() {
     this.canvas.width = this.canvas.width; // clears canvas fast
-    this.drawOwnPlayer();
-    this.drawOrigin();
     this.drawGrid();
+    this.drawCells();
+    this.drawPlayers();
+    this.drawSelection();
     this.drawHUD();
+  },
+
+  cells: function() {
+    return Object.values(this.cell_map).inject([], function(acc, row) {
+      return acc.concat(Object.values(row));
+    });
+  },
+
+  drawCells: function() {
+    this.cells().each(function(cell){this.drawCell(cell)}.bind(this));
   },
 
   initOwnPlayer: function() {
@@ -93,15 +133,14 @@ var World = Class.create({
         parameters: { player: name },
         onSuccess: function(transport) {
           var data = transport.responseText.evalJSON();
-          var cell = new Cell(data.Location.X, data.Location.Y);
-          this.ownPlayer = new Player(data.Name, cell);
-          this.centerCell(cell);
+          this.ownPlayer = new Player(data.Name, data.Location.X, data.Location.Y, "pink");
+          this.players.push(this.ownPlayer);
         }.bind(this)
       });
     }
   },
 
-  centerCell: function(cell) {
+  centerOnCell: function(cell) {
     this.centeredCell = cell;
     // find where 0,0 is
     var x = this.canvas.width  / 2;
@@ -117,16 +156,30 @@ var World = Class.create({
     this.canvas.height = document.viewport.getHeight();
   },
 
-  drawOwnPlayer: function() {
-    if (this.ownPlayer == null) return;
-    this.fillCell(this.ownPlayer.cell, "pink");
+  drawCell: function(cell) {
+    var pos = this.getPosition(cell);
+    this.context.fillStyle = cell.color;
+    this.context.fillRect(pos.x, pos.y, this.cellSize, this.cellSize);
   },
 
-  fillCell: function(cell, color) {
-    if (!color) color = "white";
-    this.context.fillStyle = color;
-    var pos = this.findCellPosition(cell);
-    this.context.fillRect(pos.x, pos.y, this.cellSize, this.cellSize);
+  drawSelection: function() {
+    this.selection.each(function(cell) {
+      this.context.fillStyle = "#00FF00";
+      var pos = this.getPosition(cell);
+      var line_width = Math.floor(Math.max(2, Math.min(8, this.cellSize / 20)));
+      this.context.fillRect(pos.x, pos.y, this.cellSize, line_width);
+      this.context.fillRect(pos.x, pos.y, line_width, this.cellSize);
+      this.context.fillRect(pos.x + this.cellSize, pos.y, -line_width, this.cellSize);
+      this.context.fillRect(pos.x, pos.y + this.cellSize, this.cellSize, -line_width);
+    }.bind(this));
+  },
+
+  drawPlayers: function() {
+    this.players.each(function(player) {
+      var pos = this.getPosition(player);
+      this.context.fillStyle = player.color;
+      this.context.fillRect(pos.x, pos.y, this.cellSize, this.cellSize);
+    }.bind(this));
   },
 
   drawHUD: function() {
@@ -139,16 +192,13 @@ var World = Class.create({
       return;
     }
 
-    ctx.fillText("name: " + this.ownPlayer.name, 16, 16);
-    ctx.fillText("x: " + this.ownPlayer.cell.x, 16, 32);
-    ctx.fillText("y: " + this.ownPlayer.cell.y, 16, 48);
+    this.players.each(function(player) {
+      var pos = this.getPosition(player);
+      ctx.fillText(player.name + "("+player.x+","+player.y+")", pos.x, pos.y);
+    }.bind(this));
   },
 
-  drawOrigin: function() {
-    this.fillCell(new Cell(0,0), "red");
-  },
-
-  findCellPosition: function(cell) {
+  getPosition: function(cell) {
     // find where origin is
     var x = this.origin.x;
     var y = this.origin.y;
@@ -160,12 +210,12 @@ var World = Class.create({
 
   drawGrid: function() {
     var ctx = this.context;
-    var width = this.canvas.width;
-    var height = this.canvas.height;
-    var pos = this.findCellPosition(this.centeredCell);
+        width = this.canvas.width,
+        height = this.canvas.height,
+        pos = this.getPosition(this.centeredCell);
     var x = pos.x, y = pos.y;
 
-    ctx.strokeStyle = "#111";
+    ctx.strokeStyle = "#5CA739";
 
     while (x <= width) {
       ctx.beginPath();
@@ -185,6 +235,7 @@ var World = Class.create({
       ctx.closePath();
       x -= this.cellSize;
     }
+
     while (y <= height) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -193,6 +244,7 @@ var World = Class.create({
       ctx.closePath();
       y += this.cellSize;
     }
+
     y = pos.y - this.cellSize;
     while (y >= 0) {
       ctx.beginPath();
@@ -211,12 +263,12 @@ document.observe("dom:loaded", function() {
 
   window.onresize = function() {
     game.resizeCanvas();
-    game.centerCell(game.centeredCell);
+    game.centerOnCell(game.centeredCell);
   };
 
   $('scale').observe("change", function(e) {
     game.cellSize = Number(this.value);
-    game.centerCell(game.centeredCell);
+    game.centerOnCell(game.centeredCell);
   });
 });
 
