@@ -1,22 +1,27 @@
-package strugglin
+package stryfe
 
+import "time"
 
 type Player struct {
-  Name  string 
-  // Color string 
-  ObtaniumCount int64
-  Location *Cell
+	name     string
+	obtanium int
+	location *Cell
 }
 
-func NewPlayer(name string, location *Cell) * Player{
-  location.state.occupied = true
-  return &Player{name,0,location}
+func NewPlayer(name string, location *Cell) *Player {
+	return &Player{name, 500, location}
 }
 
-func (this * Player) Serialize() interface{} {
-    player := make(map[string] interface{})
-    player["x"] = int64(this.Location.X)
-    player["y"] = int64(this.Location.Y)
-    player["name"] = this.Name
-    return player
+func (this *Player) Move(to *Cell) {
+	path := this.location.zone.Path(this.location, to)
+	go func (){
+		for _,step := range path {
+			this.location = step
+			time.Sleep(100000000)
+		}
+	}()
+}
+
+func (this *Player) State() string {
+	return ""
 }

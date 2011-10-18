@@ -1,24 +1,25 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=strugglin
+TARG=stryfe
 
 GOFILES=\
   world.go \
   cell.go \
   player.go \
   server.go \
+  zone.go \
 	
-strugglin: strugglin.$(O)
-	$(LD) -L _obj -o strugglin strugglin.$(O)
+stryfe: stryfe.$(O)
+	$(LD) -L _obj -o stryfe stryfe.$(O)
 
-strugglin.$(O): main.go _obj/strugglin.a
+stryfe.$(O): main.go _obj/stryfe.a
 	$(GC) -I_obj -o $@ main.go
 
-$(GOBIN)/strugglin: strugglin
-	cp strugglin $@
+$(GOBIN)/stryfe: stryfe
+	cp stryfe $@
 
-INSTALLFILES+=$(GOBIN)/strugglin
-CLEANFILES+=$(GOBIN)/strugglin
-CLEANFILES+=./strugglin
+INSTALLFILES+=$(GOBIN)/stryfe
+CLEANFILES+=$(GOBIN)/stryfe
+CLEANFILES+=./stryfe
 
 include $(GOROOT)/src/Make.pkg

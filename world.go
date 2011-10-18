@@ -1,38 +1,33 @@
-package strugglin
+package stryfe
 
-import "rand"
-import "json"
+import "os"
+import "fmt"
 
 type World struct {
-  origin*Cell
-  Players map[string] *Player
+	zones   map[string]*Zone
+	players map[string]*Player
 }
 
-func NewWorld() * World {
-  return &World{NewCell(0,0),make(map[string]*Player)}
+func NewWorld() *World {
+	world := &World{make(map[string]*Zone), make(map[string]*Player)}
+	world.zones["highlands"] = NewZone("Highlands", 250, 250)
+	return world
 }
 
-func (this * World) PlayerState(name string) string {
-  _,found := this.Players[name]
-  if !found {
-    this.AddPlayer(name) 
-  }
-  marshaled, err := json.Marshal(this.Players[name])
-  if err!=nil {
-    panic(err)
-  }
-  return string(marshaled)
+func (this *World) SpawnLocation() *Cell {
+	return this.zones["highlands"].grid[175][175]
 }
 
-
-func (this * World) SpawnLocation() * Cell {
-  cell := this.origin
-  for;cell.Occupied(); {
-    cell = cell.Neighbor(rand.Int31n(2)-1,rand.Int31n(2)-1)
-  }
-  return cell
+func (this *World) SpawnPlayer(name string) (*Player, os.Error) {
+	if _, found := this.players[name]; found {
+		return nil, fmt.Errorf("Someone has chosen [%s] already!", name)
+	}
+	return NewPlayer(name, this.SpawnLocation()), nil
 }
 
-func (this *World) AddPlayer(name string) {
-  this.Players[name] = NewPlayer(name,this.SpawnLocation())
+func (this *World) Player(name string) (*Player, os.Error) {
+	if player, found := this.players[name]; found {
+		return player,nil
+	}
+	return nil, fmt.Errorf("Player [%s] does not exist", name)
 }
