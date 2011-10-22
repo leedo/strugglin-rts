@@ -19,3 +19,10 @@ func NewZone(name string, x, y int) * Zone{
 func (this *Zone) Path(from, to *Cell) []*Cell {
 	return make([]*Cell, 0)
 }
+
+func (this *Zone) ValidLocation(x, y int) bool {
+	if x >= 0 && y>= 0 {
+		return len(this.grid) > x && len(this.grid[x]) > y	
+	} 
+	return false
+}

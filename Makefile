@@ -5,6 +5,7 @@ TARG=stryfe
 GOFILES=\
   world.go \
   cell.go \
+  cellstate.go \
   player.go \
   server.go \
   zone.go \
