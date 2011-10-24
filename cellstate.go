@@ -29,4 +29,3 @@ func (this *CellState) Passible(player *Player) bool {
 	}
 	return true
 }
-
